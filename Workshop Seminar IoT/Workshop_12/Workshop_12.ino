@@ -53,7 +53,7 @@ void loop(void) {
   timer.run();
 }
 
-BLYNK_WRITE(V6) { //function visualpin6 ใช้ในการกดปุ่มบน blynk
+BLYNK_WRITE(V3) { //function visualpin6 ใช้ในการกดปุ่มบน blynk
   if(param.asInt()){
     digitalWrite(RELAY, LOW); }
   else{
@@ -89,7 +89,7 @@ void pushTemp(){
   //อ่านค่าอุหณภูมิจาก DS18B20 temperature sensor
   sensors.requestTemperatures();
   c = sensors.getTempCByIndex(0);
-  Blynk.virtualWrite(V5,c);
+  Blynk.virtualWrite(V0,c);
   Serial.print("Temperature is: ");
   Serial.print(c); 
   Serial.println(" °C");
@@ -106,7 +106,7 @@ void pushMoisture(){
   //อ่านค่าความชื้นในดินจาก soil moisture sensor
   raw_data = analogRead(SOIL_MOIST);  
   moisture = map(raw_data, 0, 1024, 100, 0);
-  Blynk.virtualWrite(V4, moisture);
+  Blynk.virtualWrite(V1, moisture);
   Serial.print("Moisture = ");
   Serial.println(moisture);
 
@@ -133,7 +133,7 @@ void pushDistance(){
     Serial.println("Out of range");
   }
   else { 
-    Blynk.virtualWrite(V3, distanceCm); //ส่งค่าไปที่ Blynk โดยใช้ visualpin v3
+    Blynk.virtualWrite(V2, distanceCm); //ส่งค่าไปที่ Blynk โดยใช้ visualpin v3
     Serial.print("Distance (cm): ");
     Serial.print(distanceCm);
     Serial.println(" cm");
