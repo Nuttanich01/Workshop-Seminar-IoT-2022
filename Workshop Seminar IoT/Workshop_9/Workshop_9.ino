@@ -53,7 +53,7 @@ void timerEvent() {
     Serial.println("Out of range");
   }
   else {
-    Blynk.virtualWrite(V3, distanceCm); //ส่งค่าไปที่ Blynk โดยใช้ visualpin v3
+    Blynk.virtualWrite(V0, distanceCm); //ส่งค่าไปที่ Blynk โดยใช้ visualpin v0
     Serial.print("Distance (cm): ");
     Serial.print(distanceCm);
     Serial.println(" cm");

@@ -53,7 +53,7 @@ void loop(void) {
   timer.run();
 }
 
-BLYNK_WRITE(V6) { //function visualpin3 ใช้ในการกดปุ่มบน blynk
+BLYNK_WRITE(V6) { //function visualpin6 ใช้ในการกดปุ่มบน blynk
   if(param.asInt()){
     digitalWrite(RELAY, LOW); }
   else{

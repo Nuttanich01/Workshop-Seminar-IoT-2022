@@ -43,7 +43,7 @@ void timerEvent(){
   Serial.print("Moisture = "); // พิมพ์ข้อมความส่งเข้าคอมพิวเตอร์ "val = "
   Serial.println(moisture); // พิมพ์ค่าของตัวแปร val
   
-  Blynk.virtualWrite(V4, moisture);//ส่งค่าไปที่ blynk โดยใช้ visualpin 0
+  Blynk.virtualWrite(V0, moisture);//ส่งค่าไปที่ blynk โดยใช้ visualpin 0
  
   if (moisture > 50) {//จากค่าที่ทำการแปลง map_val มีค่ามากกว่า 50 เเสดงว่าดินมีความชื้นเกิน 50 เปอร์เซ็น
     digitalWrite(LED_G, LOW); // สั่งให้ LED เขียวดับ

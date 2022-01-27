@@ -1,5 +1,5 @@
 //กำหนด PIN ต่าง ๆ
-int LED1 = D1;
+int LED1 = D5;
 int LED2 = D6;
 int LED3 = D7;
 void setup(){

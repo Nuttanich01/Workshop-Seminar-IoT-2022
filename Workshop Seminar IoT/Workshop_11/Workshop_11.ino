@@ -45,7 +45,7 @@ void timerEvent(){
   Serial.print(c); // แสดงค่า อูณหภูมิ 
   Serial.println(" °C");
   
-  Blynk.virtualWrite(V5,c);//ส่งค่าไปที่ blynk โดยใช้ visualpin 0
+  Blynk.virtualWrite(V0,c);//ส่งค่าไปที่ blynk โดยใช้ visualpin 0
   
    if (sensors.getTempCByIndex(0) > 27) { 
     digitalWrite(LED, LOW); // สั่งให้ LED ดับ
