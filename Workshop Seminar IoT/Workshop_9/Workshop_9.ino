@@ -1,61 +1,47 @@
-#define BLYNK_TEMPLATE_ID "your template id"
-#define BLYNK_DEVICE_NAME "your device name"
-#define BLYNK_PRINT Serial
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-#include <ESP8266WiFi.h>
-#include <BlynkSimpleEsp8266.h>
+#define DHTPIN D4 //ใช้ประกาศว่าจะใช้ PIN D4 ในการรับข้อมูลจาก DHT22
+#define DHTTYPE DHT22
 
-//กำหนดความเร็วของเสียงให้อยู่ในหน่วย cm/uS
-#define SOUND_VELOCITY 0.034
-#define TRIG_PIN D1
-#define ECHO_PIN D2
+DHT dht(DHTPIN, DHTTYPE);
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println();
+  dht.begin();
+  lcd.begin();//เริ่มการทำงานของ LCD
+  lcd.backlight();// เปิดไฟแบล็กไลค์
 
-const char ssid[] = "Wifi_name";
-const char pass[] = "password";
-const char auth[] = "your token";
-
-long duration;
-float distanceCm;
-
-BlynkTimer timer;
-void timerEvent();
-void pushDistance();
-
-void setup() {
-  Serial.begin(115200); // Starts the serial communication
-
-  Blynk.begin(auth, ssid, pass);
-  timer.setInterval(1000L, timerEvent);
-
-  pinMode(TRIG_PIN, OUTPUT); // Sets the trigPin as an Output
-  pinMode(ECHO_PIN, INPUT); // Sets the echoPin as an Input
-  digitalWrite(TRIG_PIN, LOW); // Clears the trigPin
 }
-
 void loop() {
-  // ตั้งค่า trigPin ให้เป็น High เป็นเวลา 10 micro seconds
-  Blynk.run();
-  timer.run();
-}
-
-void timerEvent() {
-  // เเสดงระยะทาง
-  digitalWrite(TRIG_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG_PIN, LOW);
-
-  //อ่านค่าจาก echoPin ซึ่งจะคืนค่าเป็นเวลา sound wave travel (หน่วยเวลาเป็น micro seconds)
-  duration = pulseIn(ECHO_PIN, HIGH);
-
-  // คำนวณระยะทาง
-  distanceCm = duration * SOUND_VELOCITY / 2;
-  if (distanceCm >= 200 || distanceCm <= 0) {
-    Serial.println("Out of range");
+  float t = dht.readTemperature(); //รับค่าอุณหภูมิในอากาศจาก DHT22
+  float h = dht.readHumidity(); //รับค่าความชื้นในอากาศจาก DHT22
+  if(isnan(t)||isnan(h)){//ใช้ในการเช็คค่าจาก DHT22 ว่ามีค่าส่งมาหรือไม่
+    Serial.println("Failed!"); //ถ้าไม่มีค่าส่งมาจะขึ้นว่า failed
   }
-  else {
-    Blynk.virtualWrite(V0, distanceCm); //ส่งค่าไปที่ Blynk โดยใช้ visualpin v0
-    Serial.print("Distance (cm): ");
-    Serial.print(distanceCm);
-    Serial.println(" cm");
-  }
+  else{
+    Serial.print("Temp :"); 
+    Serial.print(t); //เเสดงค่าอุณหภูมิในอากาศ
+    Serial.println("*C");
+    Serial.print("Humid : ");
+    Serial.print(h);  //เเสดงค่าความชื้นในอากาศ
+    Serial.println("%");
+    Serial.println("-------------------------------------");}
+  delay(500);
+  lcd.setCursor(0, 0);//เลื่อนเคเซอร์ไปบรรทัดที่ 1 ลำดับที่ 0
+  lcd.print("hum:     ");
+  lcd.setCursor(4, 0);//เลื่อนเคเซอร์ไปบรรทัดที่ 1 ลำดับที่ 4
+  lcd.print(h);//เเสดงค่าความชื้นในอากาศ
+  lcd.setCursor(9, 0);//เลื่อนเคเซอร์ไปบรรทัดที่ 1 ลำดับที่ 9
+  lcd.print("%");
+  lcd.setCursor(0, 1);//เลื่อนเคเซอร์ไปบรรทัดที่ 2 ลำดับที่ 0
+  lcd.print("Tem:     ");
+  lcd.setCursor(4, 1);//เลื่อนเคเซอร์ไปบรรทัดที่ 2 ลำดับที่ 4
+  lcd.print(t);//เเสดงค่าอุณหภูมิในอากาศ
+  lcd.setCursor(9, 1);//เลื่อนเคเซอร์ไปบรรทัดที่ 2 ลำดับที่ 9
+  lcd.print("C");
+  delay(500);
 }

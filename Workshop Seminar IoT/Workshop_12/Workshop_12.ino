@@ -4,138 +4,53 @@
 
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 
-//ประกาศตัวแปร
-#define SOUND_VELOCITY 0.034
-
-#define TRIG          D0
-#define ONE_WIRE_BUS  D1
-#define ECHO          D2
-#define RELAY         D3
-#define LED_R         D5
-#define LED_G         D6
-#define LED_Y         D7
-
-#define SOIL_MOIST    A0
+#define Relay D2
+#define LED_G D5
+#define LED_R D6
+#define SOIL_MOIST A0
 
 const char ssid[] = "Wifi_name";
 const char pass[] = "password";
 const char auth[] = "your token";
 
 int raw_data = 0;
-int moisture = 0;
+int moisture = 0 ;
 
-long duration;
-float distanceCm;
-
-float c = 0;
-
-OneWire oneWire(ONE_WIRE_BUS);
-DallasTemperature sensors(&oneWire);
 BlynkTimer timer;
-
 void timerEvent();
-void pinConfig();
-void pushDistance();
-void pushMoisture();
-void pushTemp();
 
-void setup(void) {
+void setup()
+{
   Serial.begin(115200);
+  
   Blynk.begin(auth, ssid, pass);
   timer.setInterval(1000L, timerEvent);
-  pinConfig();
-} 
-void loop(void) {
+  
+  pinMode(LED_G, OUTPUT);  // sets the pin as output
+  pinMode(LED_R, OUTPUT);  // sets the pin as output
+}
+
+void loop()
+{
   Blynk.run();
   timer.run();
 }
 
-BLYNK_WRITE(V3) { //function visualpin6 ใช้ในการกดปุ่มบน blynk
-  if(param.asInt()){
-    digitalWrite(RELAY, LOW); }
-  else{
-    digitalWrite(RELAY, HIGH); }
-}
-
-void pinConfig(){
-  pinMode(TRIG, OUTPUT);
-  pinMode(ECHO, INPUT); 
-  digitalWrite(TRIG, LOW);
-  
-  pinMode(RELAY, OUTPUT);
-  digitalWrite(RELAY, HIGH);
-  
-  sensors.begin();
-
-  pinMode(LED_R, OUTPUT);
-  pinMode(LED_G, OUTPUT);
-  pinMode(LED_Y, OUTPUT);
-  
-  digitalWrite(LED_R, HIGH); 
-  digitalWrite(LED_G, HIGH); 
-  digitalWrite(LED_Y, HIGH); 
-}
-
 void timerEvent(){
-  pushTemp();
-  pushDistance();
-  pushMoisture();
-}
-
-void pushTemp(){
-  //อ่านค่าอุหณภูมิจาก DS18B20 temperature sensor
-  sensors.requestTemperatures();
-  c = sensors.getTempCByIndex(0);
-  Blynk.virtualWrite(V0,c);
-  Serial.print("Temperature is: ");
-  Serial.print(c); 
-  Serial.println(" °C");
-  //เช็คอุณหภูมิ
-  if(c > 27){
-      digitalWrite(LED_R, HIGH); 
-  }
-  else{
-      digitalWrite(LED_R, LOW);
-  }
-}
-
-void pushMoisture(){
-  //อ่านค่าความชื้นในดินจาก soil moisture sensor
-  raw_data = analogRead(SOIL_MOIST);  
-  moisture = map(raw_data, 0, 1024, 100, 0);
-  Blynk.virtualWrite(V1, moisture);
-  Serial.print("Moisture = ");
-  Serial.println(moisture);
-
-  if (moisture > 50) { 
-    digitalWrite(LED_Y, LOW); 
-    digitalWrite(LED_G, HIGH); 
-  }
-  else{
-    digitalWrite(LED_Y, HIGH); 
-    digitalWrite(LED_G, LOW); 
-  }
-}
-
-void pushDistance(){
-  //อ่านค่าระยะทางจาก ultrasonic sensor
-  digitalWrite(TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
+  raw_data = analogRead(SOIL_MOIST);  //อ่านค่าสัญญาณ analog ขา5 ที่ต่อกับ Soil Moisture Sensor Module v1
+  moisture = map(raw_data, 0, 1024, 100, 0); //ปรับเปลี่ยนค่าจาก 0-1024 เป็น 0-100
+  Serial.print("Moisture = "); // พิมพ์ข้อมความส่งเข้าคอมพิวเตอร์ "val = "
+  Serial.println(moisture); // พิมพ์ค่าของตัวแปร val
   
-  duration = pulseIn(ECHO, HIGH);
-  distanceCm = duration * SOUND_VELOCITY/2;
-
-  if (distanceCm >= 200 || distanceCm <= 0) {
-    Serial.println("Out of range");
+  Blynk.virtualWrite(V0, moisture);//ส่งค่าไปที่ blynk โดยใช้ visualpin 0
+ 
+  if (moisture > 50) {//จากค่าที่ทำการแปลง map_val มีค่ามากกว่า 50 เเสดงว่าดินมีความชื้นเกิน 50 เปอร์เซ็น
+    digitalWrite(LED_G, LOW); // สั่งให้ LED เขียวดับ
+    digitalWrite(LED_R, HIGH); // สั่งให้ LED สีเเดง ติดสว่าง
   }
   else { 
-    Blynk.virtualWrite(V2, distanceCm); //ส่งค่าไปที่ Blynk โดยใช้ visualpin v3
-    Serial.print("Distance (cm): ");
-    Serial.print(distanceCm);
-    Serial.println(" cm");
+    digitalWrite(LED_G, HIGH); // สั่งให้ LED เขียวติดสว่าง
+    digitalWrite(LED_R, LOW);// สั่งให้ LED สีเเดง ดับ
   }
 }

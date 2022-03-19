@@ -1,66 +1,27 @@
-#define BLYNK_TEMPLATE_ID "your template id"
-#define BLYNK_DEVICE_NAME "your device name"
-#define BLYNK_PRINT Serial
+#include <DHT.h>
+#define DHTPIN D4 //ใช้ประกาศว่าจะใช้ PIN D4 ในการรับข้อมูลจาก DHT22
+#define DHTTYPE DHT22
 
-#include <ESP8266WiFi.h>
-#include <BlynkSimpleEsp8266.h>
-
-#define LED1 D5
-#define LED2 D6
-#define LED3 D7
-
-const char ssid[] = "Wifi_name";
-const char pass[] = "password";
-const char auth[] = "your token";
-
-BlynkTimer timer;
-void timerEvent();
-
-void setup()
-{
-  //ทำการเชื่อมต่อไปที่ Blynk
+DHT dht(DHTPIN, DHTTYPE);
+void setup() {
+  dht.begin();//สั่งให้ DHT22 เริ่มทำงาน
   Serial.begin(115200);
-  
-  Blynk.begin(auth, ssid , pass);
-  timer.setInterval(1000L, timerEvent);
-  
-  //กำหนด mode ให้กับ pin
-  pinMode(LED1, OUTPUT);
-  pinMode(LED2, OUTPUT);
-  pinMode(LED3, OUTPUT);
 }
 
-void loop()
-{
-  //เริ่มการทำงานของ Blynk
-  Blynk.run();
-  timer.run();
-}
-
-BLYNK_WRITE(V0) { //function การทำงานของ visualpin 0
-  if (param.asInt()) { //param.asInt() ใช้ในการเช็คว่ามีการกดปุ่มหรือไม่ ถ้ามีจะ return เป็น true
-    
-    digitalWrite(LED1, HIGH);
+void loop() {
+  float t = dht.readTemperature(); //รับค่าอุณหภูมิในอากาศจาก DHT22
+  float h = dht.readHumidity(); //รับค่าความชื้นในอากาศจาก DHT22
+  if(isnan(t)||isnan(h)){//ใช้ในการเช็คค่าจาก DHT22 ว่ามีค่าส่งมาหรือไม่
+    Serial.println("Failed!"); //ถ้าไม่มีค่าส่งมาจะขึ้นว่า failed
   }
-  else {
-    digitalWrite(LED1, LOW);
+  else{
+    Serial.print("Temp :"); 
+    Serial.print(t); //เเสดงค่าอุณหภูมิในอากาศ
+    Serial.println("*C");
+    Serial.print("Humid : ");
+    Serial.print(h);  //เเสดงค่าความชื้นในอากาศ
+    Serial.println("%");
+    Serial.println("-------------------------------------");
   }
-}
-BLYNK_WRITE(V1) { //function การทำงานของ visualpin 1
-  if (param.asInt()) {
-    digitalWrite(LED2, HIGH);
-  }
-  else {
-    digitalWrite(LED2, LOW);
-  }
-}
-BLYNK_WRITE(V2) { //function การทำงานของ visualpin 2
-  if (param.asInt()) {
-    digitalWrite(LED3, HIGH);
-  }
-  else {
-    digitalWrite(LED3, LOW);
-  }
-}
-void timerEvent() {
+  delay(2000);//delay การทำงาน 2 วินาที
 }

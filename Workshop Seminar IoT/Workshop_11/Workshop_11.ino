@@ -4,55 +4,58 @@
 
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 
-#define ONE_WIRE_BUS D1 //กำหนดขาที่จะเชื่อมต่อ Sensor
-#define LED D5
-#define Buzzer D6
+//กำหนดความเร็วของเสียงให้อยู่ในหน่วย cm/uS
+#define SOUND_VELOCITY 0.034
+#define TRIG_PIN D1
+#define ECHO_PIN D2
 
 const char ssid[] = "Wifi_name";
 const char pass[] = "password";
 const char auth[] = "your token";
 
-float c = 0;
+long duration;
+float distanceCm;
 
-OneWire oneWire(ONE_WIRE_BUS);
-DallasTemperature sensors(&oneWire);
 BlynkTimer timer;
 void timerEvent();
+void pushDistance();
 
-void setup(void) {
-  Serial.begin(115200);
-  
+void setup() {
+  Serial.begin(115200); // Starts the serial communication
+
   Blynk.begin(auth, ssid, pass);
   timer.setInterval(1000L, timerEvent);
-  
-  sensors.begin();
-  pinMode(LED,OUTPUT);
-  pinMode(Buzzer,OUTPUT);
-} 
 
-void loop(void) {
+  pinMode(TRIG_PIN, OUTPUT); // Sets the trigPin as an Output
+  pinMode(ECHO_PIN, INPUT); // Sets the echoPin as an Input
+  digitalWrite(TRIG_PIN, LOW); // Clears the trigPin
+}
+
+void loop() {
+  // ตั้งค่า trigPin ให้เป็น High เป็นเวลา 10 micro seconds
   Blynk.run();
   timer.run();
 }
 
-void timerEvent(){
-  sensors.requestTemperatures(); //อ่านข้อมูลจาก library
-  c = sensors.getTempCByIndex(0);
-  Serial.print("Temperature = ");
-  Serial.print(c); // แสดงค่า อูณหภูมิ 
-  Serial.println(" °C");
-  
-  Blynk.virtualWrite(V0,c);//ส่งค่าไปที่ blynk โดยใช้ visualpin 0
-  
-   if (sensors.getTempCByIndex(0) > 27) { 
-    digitalWrite(LED, LOW); // สั่งให้ LED ดับ
-    digitalWrite(Buzzer, HIGH); // สั่งให้ Buzzer ส่งเสียง
+void timerEvent() {
+  // เเสดงระยะทาง
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  //อ่านค่าจาก echoPin ซึ่งจะคืนค่าเป็นเวลา sound wave travel (หน่วยเวลาเป็น micro seconds)
+  duration = pulseIn(ECHO_PIN, HIGH);
+
+  // คำนวณระยะทาง
+  distanceCm = duration * SOUND_VELOCITY / 2;
+  if (distanceCm >= 200 || distanceCm <= 0) {
+    Serial.println("Out of range");
   }
   else {
-    digitalWrite(LED, HIGH); // สั่งให้ LED ติดสว่าง
-    digitalWrite(Buzzer, LOW); // สั่งให้ Buzzerดับ
+    Blynk.virtualWrite(V0, distanceCm); //ส่งค่าไปที่ Blynk โดยใช้ visualpin v0
+    Serial.print("Distance (cm): ");
+    Serial.print(distanceCm);
+    Serial.println(" cm");
   }
 }
