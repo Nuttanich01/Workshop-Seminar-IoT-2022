@@ -38,8 +38,8 @@ void loop()
 }
 
 void timerEvent(){
-  raw_data = analogRead(SOIL_MOIST);  //อ่านค่าสัญญาณ analog ขา5 ที่ต่อกับ Soil Moisture Sensor Module v1
-  moisture = map(raw_data, 0, 1024, 100, 0); //ปรับเปลี่ยนค่าจาก 0-1024 เป็น 0-100
+  raw_data = analogRead(SOIL_MOIST);  //อ่านค่าสัญญาณ analog จาก PIN A0 ที่ต่อกับ Soil Moisture Sensor Module v1
+  moisture = map(raw_data, 0, 1023, 100, 0); //ปรับเปลี่ยนค่าจาก 0-1023 เป็น 0-100
   Serial.print("Moisture = "); // พิมพ์ข้อมความส่งเข้าคอมพิวเตอร์ "val = "
   Serial.println(moisture); // พิมพ์ค่าของตัวแปร val
   

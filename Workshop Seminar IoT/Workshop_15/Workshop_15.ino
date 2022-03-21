@@ -105,7 +105,7 @@ void pushTemp(){
 void pushMoisture(){
   //อ่านค่าความชื้นในดินจาก soil moisture sensor
   raw_data = analogRead(SOIL_MOIST);  
-  moisture = map(raw_data, 0, 1024, 100, 0);
+  moisture = map(raw_data, 0, 1023, 100, 0);
   Blynk.virtualWrite(V1, moisture);
   Serial.print("Moisture = ");
   Serial.println(moisture);
